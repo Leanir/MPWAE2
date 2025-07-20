@@ -11,6 +11,7 @@ Originally, this project was made to work inside a [Google Colab Document](https
 ### Requisites
 
 Overall structure:
+
 - Input layer: $N$ node features
 - ...
 - Latent layer: $P$ values
@@ -103,5 +104,3 @@ Here is the [Architecture Design folder (Google Drive)](https://drive.google.com
   - Another option consists in adding a bit of complexity to have an actual graph convolution (how many steps would be necessary, that is up for experimentation), most likely using a combination of networkx or torch_geometric libraries.
     - Pros: this architecture could, in theory, reconstruct missing information for nodes non-present in the input.
     - Cons: reconstructed data is just an estimate fabricated by other inputs, and network would need a proper training for it to be a useful feature (Dropout techniques are suited for this specific case scenario)
-
-
