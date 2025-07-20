@@ -1,7 +1,8 @@
-from SparseLinear import SparseLinear
-from torch import Tensor, BoolTensor, device, Module
-from torch.nn import ConvTranspose1d, Tanh
+from SparseLinear  import SparseLinear
+from torch         import Tensor, BoolTensor, device, Module
+from torch.nn      import ConvTranspose1d#, Tanh
 from torch.nn.init import kaiming_uniform_
+from ArcTanh       import ArcTanh
 
 class MPWDecoder(Module):
     def __init__(self,
@@ -16,7 +17,7 @@ class MPWDecoder(Module):
             ):
         super().__init__()
 
-        self.act = Tanh()
+        self.act = ArcTanh()
 
         # transp conv layers
         self.emb_dcnv1   = ConvTranspose1d(1, 1, 2, stride=2, device=dev)
