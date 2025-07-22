@@ -1,13 +1,13 @@
 ###############################################################################
 #
 # Main script to handle files, data, model and its training + evaluation
-# 
+#
 # MetaPathWay AutoEncoder:
 # - made by: Leandro Gozzo (aka Leanir on GitHub)
 # - for:
 #   - Università degli Studi di Catania
-#   - Computer Science Bachelor (code L-31)
-#   - Introduction to Data Mining course
+#     - Computer Science Bachelor Course (L-31)
+#       - Introduction to Data Mining
 #
 # See README.md for more informations
 #
@@ -15,6 +15,7 @@
 
 
 # region library versions
+
 from sys        import   version   as python_version
 from torch      import __version__ as torch_version
 #!pip install torcheval --quiet
@@ -29,28 +30,30 @@ print(f"""Library versions:
     Pandas     : {pandas_version}
     Matplotlib : {matplotlib_version}
     Numpy      : {numpy_version}
-""")#TorchEval  : {torcheval_version}
+""")  # TorchEval  : {torcheval_version}
 # endregion
 
 # region mass import
 #from google.colab import drive, files   # type: ignore
-import random
-from math              import ceil, log
-from pandas            import read_csv
-from torch             import cuda, device, manual_seed
-from torch.nn          import MSELoss
-from torch.optim       import Adam
-from torch.utils.data  import DataLoader
 #from torcheval.metrics import R2Score
+import random
 
+from torch            import cuda, device, manual_seed
+from torch.nn         import MSELoss
+from torch.optim      import Adam
+from torch.utils.data import DataLoader
+
+from pandas  import read_csv
+from math    import ceil, log
+from pathlib import Path
 # in-repo imporing
-from utils.masks       import generate_masks_from_edges, expand_columns, transpose_mask
-from utils.DebugHelper import DebugHelper
-
-from classes.TumorDataset    import TumorDataset
-from classes.MPWAE2          import MPWAE2
-from classes.TrainingManager import TrainingManager
 from classes.ModelEvaluator  import ModelEvaluator
+from classes.TrainingManager import TrainingManager
+from classes.MPWAE2          import MPWAE2
+from classes.TumorDataset    import TumorDataset
+
+from utils.DebugHelper import DebugHelper
+from utils.masks       import generate_masks_from_edges, expand_columns, transpose_mask
 # endregion
 
 # region Parameter Tuning
@@ -87,8 +90,6 @@ if cuda.is_available():
 #project_root = '/content/drive/MyDrive/AutoEncoderData'
 project_root = '../data'
 
-# TODO: assert file existence to proceed
-
 saved_model_path = f"{project_root}/metapathway_autoencoder.pt"
 
 tsv_root     = f'{project_root}/tsv'
@@ -107,6 +108,7 @@ mapping_dtype = {'#PathwayId': 'string', 'NodeId': 'string'}
 tumor_dtype   = {'NODE': 'string'}
 
 def read_tsv(p, d):
+    assert Path(p).exists(), f"file {p} does not exist"
     return read_csv(p, sep="\t", dtype=d)
 
 nodes_df   = read_tsv(nodes_path,   nodes_dtype)
@@ -128,7 +130,7 @@ mapping_df.drop(columns=['PathwayName'], inplace=True)
 
 # dataset filtering
 all_nodes_set = set(nodes_df['#Id'])
-tumor_df      = tumor_df[tumor_df['NODE'].isin(all_nodes_set)]
+tumor_df = tumor_df[tumor_df['NODE'].isin(all_nodes_set)]
 
 # node-to-node connection filtering
 source_nodes_set = set(tumor_df['NODE'])      # input nodes
@@ -159,7 +161,7 @@ tumor_df.set_index('NODE', inplace=True)  # ! important
 # sorted id lists of nodes and pathways
 source_nodes_id_list = sorted(source_nodes_set)
 target_nodes_id_list = sorted(target_nodes_set)
-pathways_list        = sorted(set(mapping_df['#PathwayId']))
+pathways_list = sorted(set(mapping_df['#PathwayId']))
 # endregion
 
 #################################### MASKS ####################################
@@ -179,13 +181,13 @@ temp_hid_emb_temp = generate_masks_from_edges(
     mapping_df,
     "NodeId",
     "#PathwayId"
-)# ^^^ this mask is expanded for hid -> conv
+)  # ^^^ this mask is expanded for hid -> conv
 
 hid_cnv_mask = expand_columns(temp_hid_emb_temp)
 
 # transposed masks
 dcnv_hid_mask = transpose_mask(hid_cnv_mask)
-hid_out_mask  = transpose_mask(in_hid_mask)
+hid_out_mask = transpose_mask(in_hid_mask)
 
 # t-upling
 all_masks = (
@@ -246,8 +248,8 @@ num_val     = remaining // 2
 num_test    = remaining - num_val
 
 train_sample_ids = samples[: num_train]
-val_sample_ids   = samples[num_train: num_train + num_val]
-test_sample_ids  = samples[num_train + num_val:]
+val_sample_ids = samples[num_train: num_train + num_val]
+test_sample_ids = samples[num_train + num_val:]
 
 print(f"Total samples:      {num_samples}")
 print(f"Training samples:   {len(train_sample_ids)}")
@@ -256,7 +258,7 @@ print(f"Test samples:       {len(test_sample_ids)}\n")
 # endregion
 
 # region normalization / standardization
-train_df    = tumor_df[train_sample_ids]
+train_df = tumor_df[train_sample_ids]
 train_stats = dict()
 
 match norm_method:   # ? See Quick Parameter Tuning

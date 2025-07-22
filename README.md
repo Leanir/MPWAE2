@@ -1,10 +1,12 @@
 # MPWAE2
 
-An autoencoder model that works on data from medical samples, compresses information into metapathway representation, then reconstructs it as close as possible to the original input.
+An autoencoder model that works on data from medical samples, compresses information into metapathway encoding, then reconstructs it as close as possible to the original input.
 
-Made as a project for the Introduction to Data Mining class at University of Catania - Degree Course in Computer Science.
+Made as a project for the Introduction to Data Mining class at University of Catania - Computer Science (L-31).
 
-Originally, this project was made to work inside a [Google Colab Document](https://colab.research.google.com/drive/1s8aD9c0gD2y3k318R38TMNAjWPEDl9js?usp=sharing), some modifications may be needed, keep that in mind when working with code present in this repository.
+Originally, this project was made to work inside a [Google Colab Document](https://colab.research.google.com/drive/1s8aD9c0gD2y3k318R38TMNAjWPEDl9js?usp=sharing) which will be updated until project closure.
+
+Therefore, some modifications may be needed, keep that in mind when working with code present in this repository.
 
 ## Project specifics
 
@@ -88,19 +90,36 @@ Here is the [Architecture Design folder (Google Drive)](https://drive.google.com
 
 > [TL;DR] Everything
 >
-> At this time, R2Score signals a positive, albeit very small, quality of the model in respect to guessing the reconstruction of data based off the average for each node
+> At this time $R^{2}$ score signals a positive albeit very small quality of the model in respect to guessing the reconstruction of data based off the average for each node.
 >
 > The most likely cause is an abuse of (the same) activation function, please look at the following lists to see where improvements are needed exactly.
+>
+> > Update: ArchTanh being added, the above statements may now be obsolete, some experimentation is required
 
-- Activation Functions:
-  - While hyperbolic tangent is the go-to approach for this architecture, other, more advanced activation functions may be a better option in conjunction with standardization $\mu, \sigma$ | normalization $[-1, 1]$
-  - The amount of activation steps may be exaggerated to an extent
-  - A custom arctanh(x) activation function can probably yield best results in the decoder section, as it effectively "turns around" the previous activations.
+### Activation Functions
 
-- Generalization:
-  - Current architecture may be generalized by adding an hyperparameter computation based off on how many nodes are taken into consideration after filtering. This hyperparameter is a counter of how many convolutional 1D layers are generated inside a specific model instance for data compression.
-    - Pros: various models can be adapted to different data inputs, more control over data-leaks caused by compression of great magnitude.
-    - Cons: non-unique representation of encoding between each model instance.
-  - Another option consists in adding a bit of complexity to have an actual graph convolution (how many steps would be necessary, that is up for experimentation), most likely using a combination of networkx or torch_geometric libraries.
-    - Pros: this architecture could, in theory, reconstruct missing information for nodes non-present in the input.
-    - Cons: reconstructed data is just an estimate fabricated by other inputs, and network would need a proper training for it to be a useful feature (Dropout techniques are suited for this specific case scenario)
+Although hyperbolic tangent is the default choice for this architecture, alternative activation functions may perform better when paired with standardization ($\mu, \sigma$) or normalization $[-1, 1]$ (**standardization is preferred**)
+
+While the number of activation steps follows the standard $HL + 1$, this might be an excessive use of the same two functions (**requires experimental confirmation**)
+
+A custom ArcTanh(x) activation layer may provide optimal results in the decoder, as it effectively reverses prior activations (**implemented, needs practical testing**)
+
+### Generalization
+
+The current architecture can be generalized by introducing a hyperparameter derived from the number of nodes retained post-filtering and the amount of metapathways. This hyperparameter defines the amount of 1D convolutional layers instantiated per model instance for compression purposes.
+
+- Pros
+  - adaptable models across various datasets that may add/miss nodes compared to original files.
+  - better control over data leakage caused by compression
+
+- Cons: inconsistent encoding representations of metapathways across the different model instances.
+
+An alternative involves increasing complexity to support true graph convolution (see next section).
+
+## Future Architecture Plans
+
+A future model might integrate networkx and torch_geometric libraries to enable full graph convolutional operations.
+
+This architecture could theoretically reconstruct missing node data absent from input, working on the whole knowledge base at once and reconstructing missing data by inference.
+
+This model must be explicitly trained to make this reconstruction reliable. In this case Dropout-based techniques are mandatory to enhance recontruction .
